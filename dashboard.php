@@ -1,9 +1,20 @@
+<?php
+
+session_start();
+
+if (!isset($_SESSION["user_id"])) {
+    header("Location: login.php");
+    exit;
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard | TripTask</title>
+    <title>XD Wallet</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 
@@ -11,97 +22,223 @@
 
     <header class="main-header">
         <div class="header-container">
-            <a href="dashboard.php" class="logo">TripTask</a>
+
+            <a href="dashboard.php" class="logo">
+                XD Wallet
+            </a>
 
             <div class="header-right">
-                <span class="welcome-text">Hi, Jonas</span>
-                <a href="login.php" class="btn-logout">Logout</a>
+
+                <span class="welcome-text">
+                    Hi, <?= htmlspecialchars($_SESSION["username"]); ?>
+                </span>
+
+                <a href="logout.php" class="btn-logout">
+                    Logout
+                </a>
+
             </div>
+
         </div>
     </header>
 
-    <main class="page-container">
 
-        <div class="page-heading">
-            <div>
-                <h1>My Lists</h1>
-                <p>Keep track of everything you need for your trips.</p>
-            </div>
+    <main class="wallet-container">
 
-            <button class="btn btn-add">
-                + New List
-            </button>
-        </div>
+        <!-- BALANCE -->
 
-        <div class="list-grid">
+        <section class="balance-card">
 
-            <a href="list.php?id=1" class="list-card">
-                <div class="list-card-top">
-                    <span class="list-icon">✈</span>
-                    <span class="list-menu">•••</span>
-                </div>
+            <p class="balance-label">
+                Current balance
+            </p>
 
-                <h2>Portugal Trip</h2>
+            <h1 class="balance-amount">
+                10 XD
+            </h1>
 
-                <p class="list-description">
-                    Everything I need to prepare before leaving for Portugal.
+            <p class="balance-info">
+                Your balance updates automatically.
+            </p>
+
+        </section>
+
+
+        <div class="wallet-grid">
+
+            <!-- SEND TOKENS -->
+
+            <section class="wallet-card">
+
+                <h2>Send XD</h2>
+
+                <p class="wallet-subtitle">
+                    Send tokens to another student.
                 </p>
 
-                <div class="list-card-footer">
-                    <span>8 tasks</span>
-                    <span>3 done</span>
+                <form action="" method="POST">
+
+                    <div class="form-group">
+
+                        <label for="receiver">
+                            Receiver
+                        </label>
+
+                        <input
+                            type="text"
+                            id="receiver"
+                            name="receiver"
+                            placeholder="Search for a user..."
+                            autocomplete="off"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="amount">
+                            Amount
+                        </label>
+
+                        <input
+                            type="number"
+                            id="amount"
+                            name="amount"
+                            placeholder="Enter amount"
+                            min="1"
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="reason">
+                            Reason
+                        </label>
+
+                        <textarea
+                            id="reason"
+                            name="reason"
+                            placeholder="Why are you sending these tokens?"
+                            rows="4"
+                        ></textarea>
+
+                    </div>
+
+
+                    <button type="submit" class="btn btn-primary">
+                        Send XD
+                    </button>
+
+                </form>
+
+            </section>
+
+
+            <!-- RECENT TRANSACTIONS -->
+
+            <section class="wallet-card">
+
+                <div class="transactions-heading">
+
+                    <div>
+                        <h2>Recent transactions</h2>
+
+                        <p class="wallet-subtitle">
+                            Your latest sent and received tokens.
+                        </p>
+                    </div>
+
                 </div>
 
-                <div class="progress-bar">
-                    <div class="progress" style="width: 37%;"></div>
+
+                <div class="transaction-list">
+
+                    <!-- RECEIVED -->
+
+                    <a href="transaction.php?id=1" class="transaction-item">
+
+                        <div class="transaction-icon received-icon">
+                            ↓
+                        </div>
+
+                        <div class="transaction-info">
+
+                            <strong>
+                                Nick sent you XD
+                            </strong>
+
+                            <span>
+                                Thanks for helping with my design.
+                            </span>
+
+                        </div>
+
+                        <div class="transaction-amount received-amount">
+                            +5 XD
+                        </div>
+
+                    </a>
+
+
+                    <!-- SENT -->
+
+                    <a href="transaction.php?id=2" class="transaction-item">
+
+                        <div class="transaction-icon sent-icon">
+                            ↑
+                        </div>
+
+                        <div class="transaction-info">
+
+                            <strong>
+                                You sent XD to Sarah
+                            </strong>
+
+                            <span>
+                                Lunch yesterday.
+                            </span>
+
+                        </div>
+
+                        <div class="transaction-amount sent-amount">
+                            -3 XD
+                        </div>
+
+                    </a>
+
+
+                    <!-- RECEIVED -->
+
+                    <a href="transaction.php?id=3" class="transaction-item">
+
+                        <div class="transaction-icon received-icon">
+                            ↓
+                        </div>
+
+                        <div class="transaction-info">
+
+                            <strong>
+                                Emma sent you XD
+                            </strong>
+
+                            <span>
+                                Thanks!
+                            </span>
+
+                        </div>
+
+                        <div class="transaction-amount received-amount">
+                            +2 XD
+                        </div>
+
+                    </a>
+
                 </div>
-            </a>
 
-
-            <a href="list.php?id=2" class="list-card">
-                <div class="list-card-top">
-                    <span class="list-icon">🏄</span>
-                    <span class="list-menu">•••</span>
-                </div>
-
-                <h2>Surf Camp</h2>
-
-                <p class="list-description">
-                    Things to arrange before the summer surf camp.
-                </p>
-
-                <div class="list-card-footer">
-                    <span>12 tasks</span>
-                    <span>7 done</span>
-                </div>
-
-                <div class="progress-bar">
-                    <div class="progress" style="width: 58%;"></div>
-                </div>
-            </a>
-
-
-            <a href="list.php?id=3" class="list-card">
-                <div class="list-card-top">
-                    <span class="list-icon">🏕</span>
-                    <span class="list-menu">•••</span>
-                </div>
-
-                <h2>Camping Weekend</h2>
-
-                <p class="list-description">
-                    Checklist for our weekend camping trip.
-                </p>
-
-                <div class="list-card-footer">
-                    <span>6 tasks</span>
-                    <span>1 done</span>
-                </div>
-
-                <div class="progress-bar">
-                    <div class="progress" style="width: 17%;"></div>
-                </div>
-            </a>
+            </section>
 
         </div>
 
