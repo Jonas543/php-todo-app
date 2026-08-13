@@ -7,6 +7,96 @@ if (!isset($_SESSION["user_id"])) {
     exit;
 }
 
+require_once "classes/Database.php";
+require_once "classes/Transaction.php";
+
+$database = new Database();
+$conn = $database->connect();
+
+$transaction = new Transaction($conn);
+
+$error = "";
+$success = "";
+
+$userId = $_SESSION["user_id"];
+
+
+/* =========================
+   SEND TRANSACTION
+========================= */
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+
+    $receiverUsername = trim($_POST["receiver"] ?? "");
+    $amount = (int)($_POST["amount"] ?? 0);
+    $reason = trim($_POST["reason"] ?? "");
+
+    try {
+
+        $receiver = $transaction->findUserByUsername($receiverUsername);
+
+        if (!$receiver) {
+            throw new Exception("User not found.");
+        }
+
+        $transaction->setSenderId($userId);
+        $transaction->setReceiverId($receiver["id"]);
+        $transaction->setAmount($amount);
+        $transaction->setReason($reason);
+
+        $transaction->send();
+
+        $success = "XD sent successfully.";
+
+    } catch (Exception $e) {
+        $error = $e->getMessage();
+    }
+}
+
+
+/* =========================
+   GET BALANCE
+========================= */
+
+$balance = $transaction->getBalance($userId);
+
+
+/* =========================
+   GET TRANSACTIONS
+========================= */
+
+$statement = $conn->prepare(
+    "SELECT
+        transactions.id,
+        transactions.sender_id,
+        transactions.receiver_id,
+        transactions.amount,
+        transactions.reason,
+        transactions.created_at,
+
+        sender.username AS sender_name,
+        receiver.username AS receiver_name
+
+     FROM transactions
+
+     JOIN users AS sender
+        ON transactions.sender_id = sender.id
+
+     JOIN users AS receiver
+        ON transactions.receiver_id = receiver.id
+
+     WHERE transactions.sender_id = :user_id
+        OR transactions.receiver_id = :user_id
+
+     ORDER BY transactions.created_at DESC"
+);
+
+$statement->execute([
+    "user_id" => $userId
+]);
+
+$transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
+
 ?>
 
 <!DOCTYPE html>
@@ -14,13 +104,16 @@ if (!isset($_SESSION["user_id"])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>XD Wallet</title>
+
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 
 <body>
 
     <header class="main-header">
+
         <div class="header-container">
 
             <a href="dashboard.php" class="logo">
@@ -40,6 +133,7 @@ if (!isset($_SESSION["user_id"])) {
             </div>
 
         </div>
+
     </header>
 
 
@@ -54,11 +148,11 @@ if (!isset($_SESSION["user_id"])) {
             </p>
 
             <h1 class="balance-amount">
-                10 XD
+                <?= htmlspecialchars($balance); ?> XD
             </h1>
 
             <p class="balance-info">
-                Your balance updates automatically.
+                Your balance updates when you send or receive XD.
             </p>
 
         </section>
@@ -66,7 +160,7 @@ if (!isset($_SESSION["user_id"])) {
 
         <div class="wallet-grid">
 
-            <!-- SEND TOKENS -->
+            <!-- SEND XD -->
 
             <section class="wallet-card">
 
@@ -76,23 +170,43 @@ if (!isset($_SESSION["user_id"])) {
                     Send tokens to another student.
                 </p>
 
-                <form action="" method="POST">
 
-                    <div class="form-group">
+                <?php if (!empty($error)): ?>
 
-                        <label for="receiver">
-                            Receiver
-                        </label>
+                    <p class="message error-message">
+                        <?= htmlspecialchars($error); ?>
+                    </p>
 
-                        <input
-                            type="text"
-                            id="receiver"
-                            name="receiver"
-                            placeholder="Search for a user..."
-                            autocomplete="off"
-                        >
+                <?php endif; ?>
 
-                    </div>
+
+                <?php if (!empty($success)): ?>
+
+                    <p class="message success-message">
+                        <?= htmlspecialchars($success); ?>
+                    </p>
+
+                <?php endif; ?>
+
+
+                <div class="form-group receiver-group">
+
+                    <label for="receiver">
+                        Receiver
+                    </label>
+
+                    <input
+                        type="text"
+                        id="receiver"
+                        name="receiver"
+                        placeholder="Search for a user..."
+                        autocomplete="off"
+                        required
+                    >
+
+                <div id="userSuggestions" class="user-suggestions"></div>
+
+            </div>
 
 
                     <div class="form-group">
@@ -107,6 +221,7 @@ if (!isset($_SESSION["user_id"])) {
                             name="amount"
                             placeholder="Enter amount"
                             min="1"
+                            required
                         >
 
                     </div>
@@ -123,6 +238,7 @@ if (!isset($_SESSION["user_id"])) {
                             name="reason"
                             placeholder="Why are you sending these tokens?"
                             rows="4"
+                            required
                         ></textarea>
 
                     </div>
@@ -137,104 +253,102 @@ if (!isset($_SESSION["user_id"])) {
             </section>
 
 
-            <!-- RECENT TRANSACTIONS -->
+            <!-- TRANSACTIONS -->
 
             <section class="wallet-card">
 
-                <div class="transactions-heading">
+                <h2>Recent transactions</h2>
 
-                    <div>
-                        <h2>Recent transactions</h2>
-
-                        <p class="wallet-subtitle">
-                            Your latest sent and received tokens.
-                        </p>
-                    </div>
-
-                </div>
+                <p class="wallet-subtitle">
+                    Your latest sent and received tokens.
+                </p>
 
 
                 <div class="transaction-list">
 
-                    <!-- RECEIVED -->
+                    <?php if (empty($transactions)): ?>
 
-                    <a href="transaction.php?id=1" class="transaction-item">
+                        <p class="no-transactions">
+                            No transactions yet.
+                        </p>
 
-                        <div class="transaction-icon received-icon">
-                            ↓
-                        </div>
-
-                        <div class="transaction-info">
-
-                            <strong>
-                                Nick sent you XD
-                            </strong>
-
-                            <span>
-                                Thanks for helping with my design.
-                            </span>
-
-                        </div>
-
-                        <div class="transaction-amount received-amount">
-                            +5 XD
-                        </div>
-
-                    </a>
+                    <?php else: ?>
 
 
-                    <!-- SENT -->
-
-                    <a href="transaction.php?id=2" class="transaction-item">
-
-                        <div class="transaction-icon sent-icon">
-                            ↑
-                        </div>
-
-                        <div class="transaction-info">
-
-                            <strong>
-                                You sent XD to Sarah
-                            </strong>
-
-                            <span>
-                                Lunch yesterday.
-                            </span>
-
-                        </div>
-
-                        <div class="transaction-amount sent-amount">
-                            -3 XD
-                        </div>
-
-                    </a>
+                        <?php foreach ($transactions as $item): ?>
 
 
-                    <!-- RECEIVED -->
+                            <?php if ($item["receiver_id"] == $userId): ?>
 
-                    <a href="transaction.php?id=3" class="transaction-item">
+                                <!-- RECEIVED -->
 
-                        <div class="transaction-icon received-icon">
-                            ↓
-                        </div>
+                                <a
+                                    href="transaction.php?id=<?= $item["id"]; ?>"
+                                    class="transaction-item"
+                                >
 
-                        <div class="transaction-info">
+                                    <div class="transaction-icon received-icon">
+                                        ↓
+                                    </div>
 
-                            <strong>
-                                Emma sent you XD
-                            </strong>
+                                    <div class="transaction-info">
 
-                            <span>
-                                Thanks!
-                            </span>
+                                        <strong>
+                                            <?= htmlspecialchars($item["sender_name"]); ?>
+                                            sent you XD
+                                        </strong>
 
-                        </div>
+                                        <span>
+                                            <?= htmlspecialchars($item["reason"]); ?>
+                                        </span>
 
-                        <div class="transaction-amount received-amount">
-                            +2 XD
-                        </div>
+                                    </div>
 
-                    </a>
+                                    <div class="transaction-amount received-amount">
+                                        +<?= htmlspecialchars($item["amount"]); ?> XD
+                                    </div>
+
+                                </a>
+
+
+                            <?php else: ?>
+
+                                <!-- SENT -->
+
+                                <a
+                                    href="transaction.php?id=<?= $item["id"]; ?>"
+                                    class="transaction-item"
+                                >
+
+                                    <div class="transaction-icon sent-icon">
+                                        ↑
+                                    </div>
+
+                                    <div class="transaction-info">
+
+                                        <strong>
+                                            You sent XD to
+                                            <?= htmlspecialchars($item["receiver_name"]); ?>
+                                        </strong>
+
+                                        <span>
+                                            <?= htmlspecialchars($item["reason"]); ?>
+                                        </span>
+
+                                    </div>
+
+                                    <div class="transaction-amount sent-amount">
+                                        -<?= htmlspecialchars($item["amount"]); ?> XD
+                                    </div>
+
+                                </a>
+
+                            <?php endif; ?>
+
+
+                        <?php endforeach; ?>
+
+                    <?php endif; ?>
 
                 </div>
 
@@ -243,6 +357,8 @@ if (!isset($_SESSION["user_id"])) {
         </div>
 
     </main>
+    
+    <script src="assets/js/app.js"></script>
 
 </body>
 </html>
