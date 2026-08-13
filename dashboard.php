@@ -147,7 +147,7 @@ $transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
                 Current balance
             </p>
 
-            <h1 class="balance-amount">
+            <h1 class="balance-amount" id="balanceAmount">
                 <?= htmlspecialchars($balance); ?> XD
             </h1>
 
@@ -189,24 +189,29 @@ $transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
                 <?php endif; ?>
 
 
-                <div class="form-group receiver-group">
+                <form action="" method="POST">
 
-                    <label for="receiver">
-                        Receiver
-                    </label>
+                    <div class="form-group receiver-group">
 
-                    <input
-                        type="text"
-                        id="receiver"
-                        name="receiver"
-                        placeholder="Search for a user..."
-                        autocomplete="off"
-                        required
-                    >
+                        <label for="receiver">
+                            Receiver
+                        </label>
 
-                <div id="userSuggestions" class="user-suggestions"></div>
+                        <input
+                            type="text"
+                            id="receiver"
+                            name="receiver"
+                            placeholder="Search for a user..."
+                            autocomplete="off"
+                            required
+                        >
 
-            </div>
+                        <div
+                            id="userSuggestions"
+                            class="user-suggestions"
+                        ></div>
+
+                    </div>
 
 
                     <div class="form-group">
@@ -244,7 +249,10 @@ $transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
                     </div>
 
 
-                    <button type="submit" class="btn btn-primary">
+                    <button
+                        type="submit"
+                        class="btn btn-primary"
+                    >
                         Send XD
                     </button>
 
@@ -274,9 +282,7 @@ $transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
 
                     <?php else: ?>
 
-
                         <?php foreach ($transactions as $item): ?>
-
 
                             <?php if ($item["receiver_id"] == $userId): ?>
 
@@ -309,7 +315,6 @@ $transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
                                     </div>
 
                                 </a>
-
 
                             <?php else: ?>
 
@@ -345,7 +350,6 @@ $transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
 
                             <?php endif; ?>
 
-
                         <?php endforeach; ?>
 
                     <?php endif; ?>
@@ -357,7 +361,8 @@ $transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
         </div>
 
     </main>
-    
+
+
     <script src="assets/js/app.js"></script>
 
 </body>

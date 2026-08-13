@@ -474,3 +474,113 @@ a {
 .user-suggestion:hover {
     background-color: #f4f5f9;
 }
+
+/* =========================
+   TRANSACTION DETAIL
+========================= */
+
+.transaction-detail-container {
+    width: 100%;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 45px 30px;
+}
+
+.back-link {
+    display: inline-block;
+    margin-bottom: 22px;
+    color: #5b4eff;
+    font-size: 14px;
+    font-weight: 600;
+}
+
+.back-link:hover {
+    color: #493bd8;
+}
+
+.transaction-detail-card {
+    background-color: white;
+    border-radius: 18px;
+    padding: 32px;
+    box-shadow: 0 6px 25px rgba(0, 0, 0, 0.055);
+}
+
+.transaction-detail-top {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    padding-bottom: 28px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #eeeeF2;
+}
+
+.transaction-detail-top .transaction-icon {
+    width: 55px;
+    height: 55px;
+    min-width: 55px;
+    font-size: 24px;
+}
+
+.transaction-detail-label {
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.transaction-detail-top h1 {
+    font-size: 30px;
+}
+
+.transaction-detail-list {
+    margin-top: 10px;
+}
+
+.transaction-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+    padding: 17px 0;
+    border-bottom: 1px solid #eeeeF2;
+    font-size: 14px;
+}
+
+.transaction-detail-row span {
+    color: #888;
+}
+
+.transaction-reason {
+    margin-top: 25px;
+}
+
+.transaction-reason span {
+    display: block;
+    color: #888;
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+
+.transaction-reason p {
+    background-color: #f6f6fa;
+    border-radius: 10px;
+    padding: 15px;
+    line-height: 1.5;
+    font-size: 14px;
+}
+
+@media (max-width: 600px) {
+
+    .transaction-detail-container {
+        padding: 30px 18px;
+    }
+
+    .transaction-detail-card {
+        padding: 24px;
+    }
+
+    .transaction-detail-row {
+        align-items: flex-start;
+        flex-direction: column;
+        gap: 5px;
+    }
+}

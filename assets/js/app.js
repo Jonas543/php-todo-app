@@ -37,19 +37,65 @@ if (receiverInput && userSuggestions) {
                 suggestion.textContent = user.username;
 
                 suggestion.addEventListener("click", function () {
+
                     receiverInput.value = user.username;
 
                     userSuggestions.innerHTML = "";
                     userSuggestions.style.display = "none";
+
                 });
 
                 userSuggestions.appendChild(suggestion);
+
             });
 
             userSuggestions.style.display = "block";
 
         } catch (error) {
+
             console.error("Error loading users:", error);
+
         }
+
     });
+
+}
+
+
+/* =========================
+   AUTOMATIC BALANCE UPDATE
+========================= */
+
+const balanceAmount = document.getElementById("balanceAmount");
+
+async function updateBalance() {
+
+    if (!balanceAmount) {
+        return;
+    }
+
+    try {
+
+        const response = await fetch("ajax/get-balance.php");
+
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+
+        balanceAmount.textContent = data.balance + " XD";
+
+    } catch (error) {
+
+        console.error("Error loading balance:", error);
+
+    }
+
+}
+
+if (balanceAmount) {
+
+    setInterval(updateBalance, 10000);
+
 }
