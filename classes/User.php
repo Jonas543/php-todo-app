@@ -7,13 +7,21 @@ class User
     private $email;
     private $password;
 
+
     public function __construct($conn)
     {
         $this->conn = $conn;
     }
 
+
+    /* =========================
+       USERNAME
+    ========================= */
+
     public function setUsername($username)
     {
+        $username = trim($username);
+
         if (empty($username)) {
             throw new Exception("Username cannot be empty.");
         }
@@ -21,13 +29,21 @@ class User
         $this->username = $username;
     }
 
+
     public function getUsername()
     {
         return $this->username;
     }
 
+
+    /* =========================
+       EMAIL
+    ========================= */
+
     public function setEmail($email)
     {
+        $email = trim($email);
+
         if (empty($email)) {
             throw new Exception("Email cannot be empty.");
         }
@@ -41,10 +57,16 @@ class User
         $this->email = $email;
     }
 
+
     public function getEmail()
     {
         return $this->email;
     }
+
+
+    /* =========================
+       PASSWORD
+    ========================= */
 
     public function setPassword($password)
     {
@@ -57,8 +79,39 @@ class User
         $this->password = $password;
     }
 
+
+    /* =========================
+       CHECK USERNAME
+    ========================= */
+
+    private function usernameExists()
+    {
+        $statement = $this->conn->prepare(
+            "SELECT id
+             FROM users
+             WHERE username = :username"
+        );
+
+        $statement->execute([
+            "username" => $this->username
+        ]);
+
+        return $statement->fetch(PDO::FETCH_ASSOC) !== false;
+    }
+
+
+    /* =========================
+       REGISTER
+    ========================= */
+
     public function register()
     {
+        if ($this->usernameExists()) {
+            throw new Exception(
+                "Username is already taken."
+            );
+        }
+
         $hashedPassword = password_hash(
             $this->password,
             PASSWORD_DEFAULT
@@ -76,10 +129,17 @@ class User
         ]);
     }
 
+
+    /* =========================
+       LOGIN
+    ========================= */
+
     public function login($email, $password)
     {
         $statement = $this->conn->prepare(
-            "SELECT * FROM users WHERE email = :email"
+            "SELECT *
+             FROM users
+             WHERE email = :email"
         );
 
         $statement->execute([

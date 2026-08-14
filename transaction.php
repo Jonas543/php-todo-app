@@ -8,56 +8,36 @@ if (!isset($_SESSION["user_id"])) {
 }
 
 require_once "classes/Database.php";
+require_once "classes/Transaction.php";
 
 $database = new Database();
 $conn = $database->connect();
 
+$transactionObject = new Transaction($conn);
+
 $userId = $_SESSION["user_id"];
 
 $transactionId = (int)($_GET["id"] ?? 0);
+
+
+/* =========================
+   CHECK TRANSACTION ID
+========================= */
 
 if ($transactionId <= 0) {
     header("Location: dashboard.php");
     exit;
 }
 
-$statement = $conn->prepare(
-    "SELECT
-        transactions.id,
-        transactions.sender_id,
-        transactions.receiver_id,
-        transactions.amount,
-        transactions.reason,
-        transactions.created_at,
 
-        sender.username AS sender_name,
-        sender.email AS sender_email,
+/* =========================
+   GET TRANSACTION
+========================= */
 
-        receiver.username AS receiver_name,
-        receiver.email AS receiver_email
-
-     FROM transactions
-
-     JOIN users AS sender
-        ON transactions.sender_id = sender.id
-
-     JOIN users AS receiver
-        ON transactions.receiver_id = receiver.id
-
-     WHERE transactions.id = :transaction_id
-
-     AND (
-        transactions.sender_id = :user_id
-        OR transactions.receiver_id = :user_id
-     )"
+$transaction = $transactionObject->getTransactionById(
+    $transactionId,
+    $userId
 );
-
-$statement->execute([
-    "transaction_id" => $transactionId,
-    "user_id" => $userId
-]);
-
-$transaction = $statement->fetch(PDO::FETCH_ASSOC);
 
 if (!$transaction) {
     header("Location: dashboard.php");

@@ -22,6 +22,16 @@ $userId = $_SESSION["user_id"];
 
 
 /* =========================
+   SUCCESS MESSAGE
+========================= */
+
+if (isset($_SESSION["success"])) {
+    $success = $_SESSION["success"];
+    unset($_SESSION["success"]);
+}
+
+
+/* =========================
    SEND TRANSACTION
 ========================= */
 
@@ -46,7 +56,10 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 
         $transaction->send();
 
-        $success = "XD sent successfully.";
+        $_SESSION["success"] = "XD sent successfully.";
+
+        header("Location: dashboard.php");
+        exit;
 
     } catch (Exception $e) {
         $error = $e->getMessage();
@@ -65,49 +78,27 @@ $balance = $transaction->getBalance($userId);
    GET TRANSACTIONS
 ========================= */
 
-$statement = $conn->prepare(
-    "SELECT
-        transactions.id,
-        transactions.sender_id,
-        transactions.receiver_id,
-        transactions.amount,
-        transactions.reason,
-        transactions.created_at,
-
-        sender.username AS sender_name,
-        receiver.username AS receiver_name
-
-     FROM transactions
-
-     JOIN users AS sender
-        ON transactions.sender_id = sender.id
-
-     JOIN users AS receiver
-        ON transactions.receiver_id = receiver.id
-
-     WHERE transactions.sender_id = :user_id
-        OR transactions.receiver_id = :user_id
-
-     ORDER BY transactions.created_at DESC"
-);
-
-$statement->execute([
-    "user_id" => $userId
-]);
-
-$transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
+$transactions = $transaction->getTransactionsByUser($userId);
 
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>XD Wallet</title>
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
 
-    <link rel="stylesheet" href="assets/css/style.css">
+    <title>Dashboard | XD Wallet</title>
+
+    <link
+        rel="stylesheet"
+        href="assets/css/style.css"
+    >
 </head>
 
 <body>
@@ -116,7 +107,10 @@ $transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
 
         <div class="header-container">
 
-            <a href="dashboard.php" class="logo">
+            <a
+                href="dashboard.php"
+                class="logo"
+            >
                 XD Wallet
             </a>
 
@@ -126,7 +120,10 @@ $transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
                     Hi, <?= htmlspecialchars($_SESSION["username"]); ?>
                 </span>
 
-                <a href="logout.php" class="btn-logout">
+                <a
+                    href="logout.php"
+                    class="btn-logout"
+                >
                     Logout
                 </a>
 
@@ -147,7 +144,10 @@ $transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
                 Current balance
             </p>
 
-            <h1 class="balance-amount" id="balanceAmount">
+            <h1
+                class="balance-amount"
+                id="balanceAmount"
+            >
                 <?= htmlspecialchars($balance); ?> XD
             </h1>
 
@@ -189,7 +189,10 @@ $transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
                 <?php endif; ?>
 
 
-                <form action="" method="POST">
+                <form
+                    action=""
+                    method="POST"
+                >
 
                     <div class="form-group receiver-group">
 
@@ -289,7 +292,7 @@ $transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
                                 <!-- RECEIVED -->
 
                                 <a
-                                    href="transaction.php?id=<?= $item["id"]; ?>"
+                                    href="transaction.php?id=<?= (int)$item["id"]; ?>"
                                     class="transaction-item"
                                 >
 
@@ -321,7 +324,7 @@ $transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
                                 <!-- SENT -->
 
                                 <a
-                                    href="transaction.php?id=<?= $item["id"]; ?>"
+                                    href="transaction.php?id=<?= (int)$item["id"]; ?>"
                                     class="transaction-item"
                                 >
 
@@ -366,4 +369,5 @@ $transactions = $statement->fetchAll(PDO::FETCH_ASSOC);
     <script src="assets/js/app.js"></script>
 
 </body>
+
 </html>

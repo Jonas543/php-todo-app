@@ -8,20 +8,32 @@ class Transaction
     private $amount;
     private $reason;
 
+
     public function __construct($conn)
     {
         $this->conn = $conn;
     }
+
+
+    /* =========================
+       SENDER
+    ========================= */
 
     public function setSenderId($senderId)
     {
         $this->senderId = $senderId;
     }
 
+
     public function getSenderId()
     {
         return $this->senderId;
     }
+
+
+    /* =========================
+       RECEIVER
+    ========================= */
 
     public function setReceiverId($receiverId)
     {
@@ -32,10 +44,16 @@ class Transaction
         $this->receiverId = $receiverId;
     }
 
+
     public function getReceiverId()
     {
         return $this->receiverId;
     }
+
+
+    /* =========================
+       AMOUNT
+    ========================= */
 
     public function setAmount($amount)
     {
@@ -46,10 +64,16 @@ class Transaction
         $this->amount = $amount;
     }
 
+
     public function getAmount()
     {
         return $this->amount;
     }
+
+
+    /* =========================
+       REASON
+    ========================= */
 
     public function setReason($reason)
     {
@@ -62,15 +86,23 @@ class Transaction
         $this->reason = $reason;
     }
 
+
     public function getReason()
     {
         return $this->reason;
     }
 
+
+    /* =========================
+       BALANCE
+    ========================= */
+
     public function getBalance($userId)
     {
         $statement = $this->conn->prepare(
-            "SELECT balance FROM users WHERE id = :id"
+            "SELECT balance
+             FROM users
+             WHERE id = :id"
         );
 
         $statement->execute([
@@ -86,6 +118,11 @@ class Transaction
         return $user["balance"];
     }
 
+
+    /* =========================
+       FIND USER
+    ========================= */
+
     public function findUserByUsername($username)
     {
         $statement = $this->conn->prepare(
@@ -100,6 +137,11 @@ class Transaction
 
         return $statement->fetch(PDO::FETCH_ASSOC);
     }
+
+
+    /* =========================
+       SEND TRANSACTION
+    ========================= */
 
     public function send()
     {
@@ -160,5 +202,91 @@ class Transaction
 
             throw $e;
         }
+    }
+
+
+    /* =========================
+       TRANSACTION HISTORY
+    ========================= */
+
+    public function getTransactionsByUser($userId)
+    {
+        $statement = $this->conn->prepare(
+            "SELECT
+                transactions.id,
+                transactions.sender_id,
+                transactions.receiver_id,
+                transactions.amount,
+                transactions.reason,
+                transactions.created_at,
+
+                sender.username AS sender_name,
+                receiver.username AS receiver_name
+
+             FROM transactions
+
+             JOIN users AS sender
+                ON transactions.sender_id = sender.id
+
+             JOIN users AS receiver
+                ON transactions.receiver_id = receiver.id
+
+             WHERE transactions.sender_id = :user_id
+                OR transactions.receiver_id = :user_id
+
+             ORDER BY transactions.created_at DESC"
+        );
+
+        $statement->execute([
+            "user_id" => $userId
+        ]);
+
+        return $statement->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    /* =========================
+       TRANSACTION DETAILS
+    ========================= */
+
+    public function getTransactionById($transactionId, $userId)
+    {
+        $statement = $this->conn->prepare(
+            "SELECT
+                transactions.id,
+                transactions.sender_id,
+                transactions.receiver_id,
+                transactions.amount,
+                transactions.reason,
+                transactions.created_at,
+
+                sender.username AS sender_name,
+                sender.email AS sender_email,
+
+                receiver.username AS receiver_name,
+                receiver.email AS receiver_email
+
+             FROM transactions
+
+             JOIN users AS sender
+                ON transactions.sender_id = sender.id
+
+             JOIN users AS receiver
+                ON transactions.receiver_id = receiver.id
+
+             WHERE transactions.id = :transaction_id
+
+             AND (
+                transactions.sender_id = :user_id
+                OR transactions.receiver_id = :user_id
+             )"
+        );
+
+        $statement->execute([
+            "transaction_id" => $transactionId,
+            "user_id" => $userId
+        ]);
+
+        return $statement->fetch(PDO::FETCH_ASSOC);
     }
 }

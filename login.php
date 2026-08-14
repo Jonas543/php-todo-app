@@ -40,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | TripTask</title>
+    <title>Login | XD Wallet</title>
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 
@@ -49,8 +49,8 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
     <div class="auth-container">
 
         <div class="auth-logo">
-            <h1>TripTask</h1>
-            <p>Plan your trip, one task at a time.</p>
+            <h1>XD Wallet</h1>
+            <p>Send and receive virtual XD currency.</p>
         </div>
 
         <div class="auth-card">
