@@ -58,7 +58,7 @@ if ($_SERVER["REQUEST_METHOD"] === "POST") {
             <h2>Welcome back</h2>
 
             <p class="auth-subtitle">
-                Login to continue planning your trip.
+                Login to view your wallet.
             </p>
 
             <?php if (!empty($error)): ?>
